@@ -267,8 +267,10 @@ int dictRehash(dict *d, int n) {
             unsigned int h;
 
             nextde = de->next;
+	    PM_READ(de->next);
             /* Get the index in the new hash table */
             h = dictHashKey(d, de->key) & d->ht[1].sizemask;
+	    PM_READ(de->key);
             PM_EQU_DW((de->next), (d->ht[1].table[h]));
             d->ht[1].table[h] = de;
             d->ht[0].used--;
@@ -483,6 +485,7 @@ int dictReplacePM(dict *d, void *key, void *val)
      * you want to increment (set), and then decrement (free), and not the
      * reverse. */
     auxentry = *entry;
+    PM_READ(entry);
     dictSetVal(d, entry, val);
     dictFreeVal(d, &auxentry);
     return 0;
@@ -620,9 +623,11 @@ dictEntry *dictFind(dict *d, const void *key)
         idx = h & d->ht[table].sizemask;
         he = d->ht[table].table[idx];
         while(he) {
+	    PM_READ(he->key);
             if (dictCompareKeys(d, key, he->key))
                 return he;
             he = he->next;
+	    PM_READ(he->next);
         }
         if (!dictIsRehashing(d)) return NULL;
     }
@@ -723,6 +728,7 @@ dictEntry *dictNext(dictIterator *iter)
             /* We need to save the 'next' here, the iterator user
              * may delete the entry we are returning. */
             iter->nextEntry = iter->entry->next;
+	    PM_READ (iter->entry->next);
             return iter->entry;
         }
     }
@@ -988,6 +994,7 @@ unsigned long dictScan(dict *d,
         while (de) {
             fn(privdata, de);
             de = de->next;
+	    PM_READ (de->next);
         }
 
     } else {
@@ -1097,9 +1104,11 @@ static int _dictKeyIndex(dict *d, const void *key)
         /* Search if this slot does not already contain the given key */
         he = d->ht[table].table[idx];
         while(he) {
+	    PM_READ(he->key);
             if (dictCompareKeys(d, key, he->key))
                 return -1;
             he = he->next;
+	    PM_READ(he->next);
         }
         if (!dictIsRehashing(d)) break;
     }

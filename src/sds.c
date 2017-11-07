@@ -424,24 +424,28 @@ void sdsIncrLen(sds s, int incr) {
             SDS_HDR_VAR(8,s);
             assert((incr >= 0 && sh->alloc-sh->len >= incr) || (incr < 0 && sh->len >= (unsigned int)(-incr)));
             len = (sh->len += incr);
+	    PM_READ (sh->len);
             break;
         }
         case SDS_TYPE_16: {
             SDS_HDR_VAR(16,s);
             assert((incr >= 0 && sh->alloc-sh->len >= incr) || (incr < 0 && sh->len >= (unsigned int)(-incr)));
             len = (sh->len += incr);
+	    PM_READ (sh->len);
             break;
         }
         case SDS_TYPE_32: {
             SDS_HDR_VAR(32,s);
             assert((incr >= 0 && sh->alloc-sh->len >= (unsigned int)incr) || (incr < 0 && sh->len >= (unsigned int)(-incr)));
             len = (sh->len += incr);
+	    PM_READ (sh->len);
             break;
         }
         case SDS_TYPE_64: {
             SDS_HDR_VAR(64,s);
             assert((incr >= 0 && sh->alloc-sh->len >= (uint64_t)incr) || (incr < 0 && sh->len >= (uint64_t)(-incr)));
             len = (sh->len += incr);
+	    PM_READ (sh->len);
             break;
         }
         default: len = 0; /* Just to avoid compilation warnings. */
